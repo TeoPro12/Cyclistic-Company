@@ -1,0 +1,72 @@
+install.packages("dplyr")
+install.packages("tidyr")
+install.packages("tidyverse")
+install.packages("rmarkdown")
+install.packages("tinytex")
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(rmarkdown)
+library(tinytex)
+
+View(datos)
+head(datos)
+glimpse(datos)
+select(datos, started_at, ended_at, member_casual)
+miembros<-filter(datos, member_casual=="member")
+View(miembros)
+casuales<-filter(datos, member_casual=="casual")
+View(casuales)
+
+miembros$started_at <- as.POSIXlt(miembros$started_at, format = "%Y-%m-%d %H:%M:%S")
+miembros$ended_at <- as.POSIXlt(miembros$ended_at, format = "%Y-%m-%d %H:%M:%S")
+casuales$started_at <- as.POSIXlt(casuales$started_at, format = "%Y-%m-%d %H:%M:%S")
+casuales$ended_at <- as.POSIXlt(casuales$ended_at, format = "%Y-%m-%d %H:%M:%S")
+miembros$date_inicio <- format(miembros$started_at, "%Y-%m-%d")
+miembros$hour_inicio <- format(miembros$started_at, "%H:%M:%S")
+miembros$date_fin <- format(miembros$ended_at, "%Y-%m-%d")
+miembros$hour_fin <- format(miembros$ended_at, "%H:%M:%S")
+casuales$date_inicio <- format(casuales$started_at, "%Y-%m-%d")
+casuales$hour_inicio <- format(casuales$started_at, "%H:%M:%S")
+casuales$date_fin <- format(casuales$ended_at, "%Y-%m-%d")
+casuales$hour_fin <- format(casuales$ended_at, "%H:%M:%S")
+
+View(casuales)
+View(miembros)
+
+miembrosTU<-mutate(miembros, TiempoUso=ended_at-started_at,Día=weekdays(as.Date(miembros$date_inicio)))
+miembrosTU<-select(miembrosTU,ride_id,rideable_type,started_at,ended_at,TiempoUso,Día)
+View(miembrosTU)
+
+casualesTU<-mutate(casuales,TiempoUso=ended_at-started_at,Día=weekdays(as.Date(casuales$date_inicio)))
+casualesTU<-select(casualesTU,ride_id,rideable_type,started_at,ended_at,TiempoUso,Día)
+View(casualesTU)
+
+PromMiembros<-mean(miembrosTU$TiempoUso)
+PromCasuales<-mean(casualesTU$TiempoUso)
+MaxMiembros<-max(miembrosTU$TiempoUso)
+MaxCasuales<-max(casualesTU$TiempoUso)
+
+print(paste("Media miembros:", as.character(PromMiembros)))
+print(paste("Media casuales:", as.character(PromCasuales)))
+print(paste("Máximo miembros:", as.character(MaxMiembros)))
+print(paste("Maximo casuales:", as.character(MaxCasuales)))
+
+
+write.csv(casualesTU, file = "D:/DISCO D/UNIDAD D/Documentos/Analisis de datos/C8/Caso Practico 1/casualesC.csv", row.names = FALSE)
+write.csv(miembrosTU, file = "D:/DISCO D/UNIDAD D/Documentos/Analisis de datos/C8/Caso Practico 1/MiembrosC.csv", row.names = FALSE)
+
+ggplot(data=miembrosTU,aes(x=Día,y=as.numeric(TiempoUso))) + 
+  geom_bar(stat = "identity") + labs(x="Días de la semana", y="Tiempo de Uso", title="Uso por día de la semana de los miembros")
+
+ggplot(data=casualesTU,aes(x=Día,y=as.numeric(TiempoUso))) + 
+  geom_bar(stat = "identity") + labs(x="Días de la semana", y="Tiempo de Uso", title="Uso por día de la semana de los casuales")
+
+ggplot(data=miembrosTU,aes(x=Día,y=as.numeric(TiempoUso))) + 
+  geom_smooth(stat = "identity") + labs(x="Días de la semana", y="Tiempo de Uso", title="Uso por día de la semana de los miembros")
+
+ggplot(data=casualesTU,aes(x=Día,y=as.numeric(TiempoUso))) + 
+  geom_smooth(stat = "identity") + labs(x="Días de la semana", y="Tiempo de Uso", title="Uso por día de la semana de los casuales")
+
+ggplot(data=casualesTU,aes(x=Día,y=as.numeric(TiempoUso))) + 
+  geom_jitter(stat = "identity") + labs(x="Días de la semana", y="Tiempo de Uso", title="Uso por día de la semana de los casuales")
